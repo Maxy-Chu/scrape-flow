@@ -3,21 +3,22 @@
 import React, { useCallback, useState } from 'react'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Layers2Icon } from 'lucide-react';
+import { Layers2Icon, Loader2 } from 'lucide-react';
 import CustomDialogHeader from '@/components/CustomDialogHeader';
 import { createWorkflowSchema, createWorkflowSchemaType } from '@/schema/workflows';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useMutation } from '@tanstack/react-query';
 import { CreateWorkflow } from '@/actions/workflows/createWorkflow';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 function CreateWorkflowDialog({ triggerText }: { triggerText?: string }) {
   const [open, setOpen] = useState(false);
+  const router = useRouter();
 
   // z.infer is used to infer the user input type from the schema
   const form = useForm<createWorkflowSchemaType>({
@@ -27,14 +28,16 @@ function CreateWorkflowDialog({ triggerText }: { triggerText?: string }) {
 
   // Mutation for form submission to database
   const { mutate, isPending } = useMutation({
-    mutationFn: CreateWorkflow,
-    onSuccess: () => {
+    mutationFn: (values: createWorkflowSchemaType) => CreateWorkflow({ ...values }),
+    onSuccess: (resultId) => {
       toast.success("Workflow created", { id: "create-workflow" });
+      router.push(`/workflows/editor/${resultId}`); // Navigate to the workflow editor page at frontend
     },
-    onError: () => {
+    onError: (error) => {
+      console.error(error);
       toast.error("Failed to create workflow", { id: "create-workflow" });
     },
-  })
+  });
 
   // Handle form submission
   const onSubmit = useCallback(
@@ -46,7 +49,10 @@ function CreateWorkflowDialog({ triggerText }: { triggerText?: string }) {
   );
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(open) => {
+      form.reset();
+      setOpen(open);
+    }}>
       <DialogTrigger asChild>
         <Button>{triggerText ?? "Create workflow"}</Button>
       </DialogTrigger>
@@ -97,7 +103,10 @@ function CreateWorkflowDialog({ triggerText }: { triggerText?: string }) {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className='w-full' disabled={isPending}>Proceed</Button>
+              <Button type="submit" className='w-full' disabled={isPending}>
+                {!isPending && "Proceed"}
+                {isPending && <Loader2 className='animate-spin' />}
+              </Button>
             </form>
           </Form>
         </div>

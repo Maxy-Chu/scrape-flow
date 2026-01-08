@@ -4,7 +4,6 @@ import { prisma } from "@/lib/prisma";
 import { createWorkflowSchema, createWorkflowSchemaType } from "@/schema/workflows";
 import { WorkflowStatus } from "@/types/workflow";
 import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
 
 export async function CreateWorkflow(form: createWorkflowSchemaType) {
     // need Zod validation here again because
@@ -32,5 +31,5 @@ export async function CreateWorkflow(form: createWorkflowSchemaType) {
     if (!result) {
         throw new Error("Failed to create workflow");
     }
-    redirect(`/workflows/editor/${result.id}`);
+    return result.id;
 }
