@@ -31,7 +31,7 @@ function CreateWorkflowDialog({ triggerText }: { triggerText?: string }) {
     mutationFn: (values: createWorkflowSchemaType) => CreateWorkflow({ ...values }),
     onSuccess: (resultId) => {
       toast.success("Workflow created", { id: "create-workflow" });
-      router.push(`/workflows/editor/${resultId}`); // Navigate to the workflow editor page at frontend
+      router.push(`/workflow/editor/${resultId}`); // Navigate to the workflow editor page at frontend
     },
     onError: (error) => {
       console.error(error);
